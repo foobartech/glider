@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net"
 
+	"github.com/nadoo/glider/pkg/ip4p"
 	"github.com/nadoo/glider/pkg/log"
 	"github.com/nadoo/glider/pkg/socks"
 	"github.com/nadoo/glider/proxy"
@@ -46,13 +47,14 @@ func (s *SS) Dial(network, addr string) (net.Conn, error) {
 
 // DialUDP connects to the given address via the proxy.
 func (s *SS) DialUDP(network, addr string) (net.PacketConn, error) {
-	pc, err := s.dialer.DialUDP(network, s.addr)
+	saddr := ip4p.LookupIP4P(s.addr)
+	pc, err := s.dialer.DialUDP(network, saddr)
 	if err != nil {
-		log.F("[ss] dialudp to %s error: %s", s.addr, err)
+		log.F("[ss] dialudp to %s error: %s", saddr, err)
 		return nil, err
 	}
 
-	writeTo, err := net.ResolveUDPAddr("udp", s.addr)
+	writeTo, err := net.ResolveUDPAddr("udp", saddr)
 	if err != nil {
 		log.F("[ss] resolve addr error: %s", err)
 		return nil, err

@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/nadoo/glider/pkg/ip4p"
 	"github.com/nadoo/glider/pkg/log"
 	"github.com/nadoo/glider/pkg/pool"
 	"github.com/nadoo/glider/proxy"
@@ -157,7 +158,8 @@ func (s *UDP) Dial(network, addr string) (net.Conn, error) {
 func (s *UDP) DialUDP(network, addr string) (net.PacketConn, error) {
 	// return s.dialer.DialUDP(network, s.addr)
 	pc, err := s.dialer.DialUDP(network, s.addr)
-	return &PktConn{pc, s.uaddr}, err
+	uaddr, _ := net.ResolveUDPAddr("udp", ip4p.LookupIP4P(s.addr))
+	return &PktConn{pc, uaddr}, err
 }
 
 // PktConn .

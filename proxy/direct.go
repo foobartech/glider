@@ -7,6 +7,7 @@ import (
 	"net/netip"
 	"time"
 
+	"github.com/nadoo/glider/pkg/ip4p"
 	"github.com/nadoo/glider/pkg/sockopt"
 )
 
@@ -91,7 +92,7 @@ func (d *Direct) dial(network, addr string, localIP net.IP) (net.Conn, error) {
 		dialer.Control = sockopt.Control(sockopt.Bind(d.iface))
 	}
 
-	c, err := dialer.Dial(network, addr)
+	c, err := dialer.Dial(network, ip4p.LookupIP4P(addr))
 	if err != nil {
 		return nil, err
 	}

@@ -12,6 +12,7 @@ import (
 	kcp "github.com/xtaci/kcp-go/v5"
 	"golang.org/x/crypto/pbkdf2"
 
+	"github.com/nadoo/glider/pkg/ip4p"
 	"github.com/nadoo/glider/pkg/log"
 	"github.com/nadoo/glider/proxy"
 )
@@ -222,10 +223,11 @@ func (s *KCP) Addr() string {
 
 // Dial connects to the address addr on the network net via the proxy.
 func (s *KCP) Dial(network, addr string) (net.Conn, error) {
+	saddr := ip4p.LookupIP4P(s.addr)
 	// NOTE: kcp uses udp, we should dial remote server directly here
-	c, err := kcp.DialWithOptions(s.addr, s.block, s.dataShards, s.parityShards)
+	c, err := kcp.DialWithOptions(saddr, s.block, s.dataShards, s.parityShards)
 	if err != nil {
-		log.F("[kcp] dial to %s error: %s", s.addr, err)
+		log.F("[kcp] dial to %s error: %s", saddr, err)
 		return nil, err
 	}
 
