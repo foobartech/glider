@@ -22,37 +22,38 @@ import (
 )
 
 func LookupIP4P(addr string) string {
-	hostname, _, err := net.SplitHostPort(addr)
+	hostname, port, err := net.SplitHostPort(addr)
 	if err != nil {
 		log.F("[ip4p] SplitHostPort err: %v", err)
 		return addr
 	}
-	// addr 可能为 :443 只有端口，字符串必须用双引号
-	if hostname == "" {
-		// log.F("[ip4p] Empty hostname")
-		return addr
-	}
-	// log.F("hostname %v", hostname)
-	ip := net.ParseIP(hostname)
-	if ip != nil {
-		// log.F("[ip4p] hostname is ip: %v", ip)
-		return addr
-	}
-	ips, err := net.LookupIP(hostname)
-	if err != nil {
-		log.F("[ip4p] LookupIP err: %v", err)
-		return addr
-	}
-	// log.F("ips %v", ips)
-	if err == nil {
-		for _, ip := range ips {
-			// log.F("ip %v", ip)
-			if len(ip) == 16 {
-				if ip[0] == 0x20 && ip[1] == 0x01 &&
-					ip[2] == 0x00 && ip[3] == 0x00 {
-					// log.F("lookupIP4P true")
-					addr = net.IPv4(ip[12], ip[13], ip[14], ip[15]).String() + ":" + strconv.Itoa(int(ip[10])<<8|int(ip[11]))
-					break
+	if port == "0" {
+		// addr 可能为 :443 只有端口，字符串必须用双引号
+		if hostname == "" {
+			// log.F("[ip4p] Empty hostname")
+			return addr
+		}
+		// log.F("hostname %v", hostname)
+		ip := net.ParseIP(hostname)
+		if ip != nil {
+			// log.F("[ip4p] hostname is ip: %v", ip)
+			return addr
+		}
+		ips, err := net.LookupIP(hostname)
+		if err != nil {
+			log.F("[ip4p] LookupIP err: %v", err)
+			return addr
+		} else {
+			// log.F("ips %v", ips)
+			for _, ip := range ips {
+				// log.F("ip %v", ip)
+				if len(ip) == 16 {
+					if ip[0] == 0x20 && ip[1] == 0x01 &&
+						ip[2] == 0x00 && ip[3] == 0x00 {
+						// log.F("lookupIP4P true")
+						addr = net.IPv4(ip[12], ip[13], ip[14], ip[15]).String() + ":" + strconv.Itoa(int(ip[10])<<8|int(ip[11]))
+						break
+					}
 				}
 			}
 		}
