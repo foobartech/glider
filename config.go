@@ -8,6 +8,7 @@ import (
 	"github.com/nadoo/conflag"
 
 	"github.com/nadoo/glider/dns"
+	"github.com/nadoo/glider/pkg/fragment"
 	"github.com/nadoo/glider/pkg/log"
 	"github.com/nadoo/glider/proxy"
 	"github.com/nadoo/glider/rule"
@@ -88,6 +89,11 @@ check=disable: disable health check`)
 	flag.BoolVar(&conf.DNSConfig.NoAAAA, "dnsnoaaaa", false, "disable AAAA query")
 	flag.StringSliceUniqVar(&conf.DNSConfig.Records, "dnsrecord", nil, "custom dns record, format: domain/ip")
 
+	// fragment configs
+	flag.StringVar(&fragment.C.Packets, "fPackets", "", "fragment Packets")
+	flag.StringVar(&fragment.C.Length, "fLength", "", "fragment Length")
+	flag.StringVar(&fragment.C.Interval, "fInterval", "", "fragment Interval")
+
 	// service configs
 	flag.StringSliceUniqVar(&conf.Services, "service", nil, "run specified services, format: SERVICE_NAME[,SERVICE_CONFIG]")
 
@@ -110,6 +116,7 @@ check=disable: disable health check`)
 
 	// setup logger
 	log.Set(conf.Verbose, conf.LogFlags)
+	fragment.GetFragmentConfig()
 
 	if len(conf.Listens) == 0 && conf.DNS == "" && len(conf.Services) == 0 {
 		// flag.Usage()

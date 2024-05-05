@@ -7,8 +7,9 @@ import (
 
 // Options is the options struct.
 type Options struct {
-	bindIface *net.Interface
-	reuseAddr bool
+	bindIface  *net.Interface
+	reuseAddr  bool
+	tcpNoDelay bool
 }
 
 // Option is the function paramater.
@@ -18,7 +19,8 @@ type Option func(opts *Options)
 func Bind(intf *net.Interface) Option { return func(opts *Options) { opts.bindIface = intf } }
 
 // ReuseAddr sets the reuse addr option.
-func ReuseAddr() Option { return func(opts *Options) { opts.reuseAddr = true } }
+func ReuseAddr() Option  { return func(opts *Options) { opts.reuseAddr = true } }
+func TcpNoDelay() Option { return func(opts *Options) { opts.tcpNoDelay = true } }
 
 // Control returns a control function for the net.Dialer and net.ListenConfig.
 func Control(opts ...Option) func(network, address string, c syscall.RawConn) error {

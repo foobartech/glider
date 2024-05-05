@@ -7,7 +7,9 @@ import (
 	"net/netip"
 	"time"
 
+	"github.com/nadoo/glider/pkg/fragment"
 	"github.com/nadoo/glider/pkg/ip4p"
+	"github.com/nadoo/glider/pkg/log"
 	"github.com/nadoo/glider/pkg/sockopt"
 )
 
@@ -80,18 +82,25 @@ func (d *Direct) Dial(network, addr string) (c net.Conn, err error) {
 
 func (d *Direct) dial(network, addr string, localIP net.IP) (net.Conn, error) {
 	var la net.Addr
+	var bind, tcpNoDelay sockopt.Option = func(opts *sockopt.Options) {}, func(opts *sockopt.Options) {}
+	var fragmentEnabled = false
 	switch network {
 	case "tcp":
 		la = &net.TCPAddr{IP: localIP}
+		if fragment.FrErr == nil {
+			tcpNoDelay = sockopt.TcpNoDelay()
+			fragmentEnabled = true
+		}
 	case "udp":
 		la = &net.UDPAddr{IP: localIP}
 	}
 
 	dialer := &net.Dialer{LocalAddr: la, Timeout: d.dialTimeout}
 	if d.iface != nil {
-		dialer.Control = sockopt.Control(sockopt.Bind(d.iface))
+		bind = sockopt.Bind(d.iface)
 	}
 
+	dialer.Control = sockopt.Control(bind, tcpNoDelay)
 	c, err := dialer.Dial(network, ip4p.LookupIP4P(addr))
 	if err != nil {
 		return nil, err
@@ -105,6 +114,10 @@ func (d *Direct) dial(network, addr string, localIP net.IP) (net.Conn, error) {
 		c.SetDeadline(time.Now().Add(d.relayTimeout))
 	}
 
+	if fragmentEnabled {
+		log.F("fragment: %v", *fragment.C)
+		return fragment.GetFragmentWriter(c), err
+	}
 	return c, err
 }
 

@@ -22,6 +22,10 @@ func control(opt *Options) func(network, address string, c syscall.RawConn) erro
 				unix.SetsockoptInt(int(fd), unix.SOL_SOCKET, unix.SO_REUSEADDR, 1)
 				unix.SetsockoptInt(int(fd), unix.SOL_SOCKET, unix.SO_REUSEPORT, 1)
 			}
+			if opt.tcpNoDelay {
+				// https://github.com/XTLS/Xray-core/blob/84eeb56ae45f48b9ab5166abefb2fda40986b8a8/transport/internet/sockopt_darwin.go#L140
+				unix.SetsockoptInt(int(fd), unix.IPPROTO_TCP, unix.TCP_NODELAY, 1)
+			}
 
 		})
 	}
