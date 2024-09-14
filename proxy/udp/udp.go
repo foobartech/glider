@@ -42,7 +42,10 @@ func NewUDP(s string, d proxy.Dialer, p proxy.Proxy) (*UDP, error) {
 	}
 
 	t.uaddr, err = net.ResolveUDPAddr("udp", t.addr)
-	return t, err
+	if err != nil {
+		log.F("[udp] ResolveUDPAddr err: %s", err)
+	}
+	return t, nil
 }
 
 // NewUDPDialer returns a udp dialer.
